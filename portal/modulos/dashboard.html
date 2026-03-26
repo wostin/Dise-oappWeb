@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Mi Banco</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="../css/styles.css" rel="stylesheet">
+</head>
+<body>
+
+<div id="loadingOverlay" class="position-fixed vh-100 vw-100 d-flex justify-content-center align-items-center bg-white" style="z-index: 9999;">
+  <div class="text-center">
+    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status"></div>
+    <p class="mt-2 text-muted fw-semibold">Cargando tu información...</p>
+  </div>
+</div>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand fw-bold" href="dashboard.html">
+      <i class="bi bi-bank me-2"></i>MI BANCO
+    </a>
+    <div class="ms-auto d-flex align-items-center gap-3">
+      <span class="text-white d-none d-sm-inline">
+        <i class="bi bi-person-circle me-1"></i>
+        <span id="userName">Cliente</span>
+      </span>
+      <button class="btn btn-sm btn-light fw-bold" id="btnLogout">
+        <i class="bi bi-box-arrow-right me-1"></i>Salir
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid">
+  <div class="row">
+    <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse py-4 border-end min-vh-100">
+      <div class="position-sticky">
+        <ul class="nav flex-column gap-2">
+          <li class="nav-item"><a class="nav-link active fw-bold text-primary" href="dashboard.html"><i class="bi bi-grid-1x2 me-2"></i> Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link text-dark" href="transacciones.html"><i class="bi bi-arrow-left-right me-2"></i> Transacciones</a></li>
+          <li class="nav-item"><a class="nav-link text-dark" href="pagos.html"><i class="bi bi-credit-card me-2"></i> Pagos</a></li>
+          <li class="nav-item"><a class="nav-link text-dark" href="prestamos.html"><i class="bi bi-cash-stack me-2"></i> Préstamos</a></li>
+          <li class="nav-item"><a class="nav-link text-dark" href="ahorro.html"><i class="bi bi-piggy-bank me-2"></i> Ahorro</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+      
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h4 class="mb-0 fw-bold">Hola, <span id="welcomeName">Cliente</span></h4>
+          <p class="text-muted small mb-0" id="fechaHoy"></p>
+        </div>
+        <span class="badge bg-success bg-opacity-10 text-success p-2">
+          <i class="bi bi-circle-fill me-1 small"></i> En línea
+        </span>
+      </div>
+
+      <h6 class="fw-bold text-muted mb-3 text-uppercase small">Tus Cuentas</h6>
+      <div class="row g-3 mb-5" id="cuentasContainer">
+        </div>
+
+      <h6 class="fw-bold text-muted mb-3 text-uppercase small">Accesos Rápidos</h6>
+      <div class="row g-3 mb-5 text-center">
+        <div class="col-6 col-md-3">
+          <a href="transacciones.html" class="card card-body shadow-sm text-decoration-none py-3 border-0 transition-hover">
+            <i class="bi bi-arrow-left-right fs-3 text-primary mb-2"></i>
+            <span class="small fw-bold text-dark">Transacciones</span>
+          </a>
+        </div>
+        <div class="col-6 col-md-3">
+          <a href="pagos.html" class="card card-body shadow-sm text-decoration-none py-3 border-0 transition-hover">
+            <i class="bi bi-credit-card-2-front fs-3 text-success mb-2"></i>
+            <span class="small fw-bold text-dark">Pagos</span>
+          </a>
+        </div>
+        <div class="col-6 col-md-3">
+          <a href="prestamos.html" class="card card-body shadow-sm text-decoration-none py-3 border-0 transition-hover">
+            <i class="bi bi-cash-stack fs-3 text-warning mb-2"></i>
+            <span class="small fw-bold text-dark">Préstamos</span>
+          </a>
+        </div>
+        <div class="col-6 col-md-3">
+          <a href="ahorro.html" class="card card-body shadow-sm text-decoration-none py-3 border-0 transition-hover">
+            <i class="bi bi-piggy-bank fs-3 text-info mb-2"></i>
+            <span class="small fw-bold text-dark">Ahorro</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white py-3 border-bottom-0">
+          <h6 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2 text-primary"></i>Movimientos Recientes</h6>
+        </div>
+        <div class="card-body p-0">
+          <div id="txnRecientes"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module">
+  import { supabase, requireAuth, formatSoles, formatFecha } from '../js/supabase.js';
+
+  const user = await requireAuth();
+  const loadingOverlay = document.getElementById('loadingOverlay');
+
+  if (user) {
+    const nombre = user.user_metadata?.full_name?.split(' ')[0] || user.email;
+    document.getElementById('userName').textContent = nombre;
+    document.getElementById('welcomeName').textContent = nombre;
+    document.getElementById('fechaHoy').textContent = new Date().toLocaleDateString('es-PE', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    cargarDashboard();
+  }
+
+  async function cargarDashboard() {
+    try {
+      // 1. Obtener Cuentas
+      const { data: cuentas, error: errC } = await supabase
+        .from('cuentas')
+        .select('*')
+        .eq('user_id', user.id);
+
+      // 2. Obtener Transacciones
+      const { data: txns, error: errT } = await supabase
+        .from('transacciones')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('fecha', { ascending: false })
+        .limit(5);
+
+      if (errC || errT) throw errC || errT;
+
+      // Renderizar Cuentas
+      const containerC = document.getElementById('cuentasContainer');
+      containerC.innerHTML = (cuentas.length === 0) 
+        ? `<div class="col-12"><div class="alert alert-light border shadow-sm">No tienes cuentas registradas.</div></div>`
+        : cuentas.map(c => {
+            const isCorriente = c.tipo.toLowerCase() === 'corriente';
+            return `
+              <div class="col-12 col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm border-start border-4 ${isCorriente ? 'border-primary' : 'border-success'}">
+                  <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                      <span class="badge ${isCorriente ? 'bg-primary' : 'bg-success'} bg-opacity-10 ${isCorriente ? 'text-primary' : 'text-success'}">
+                        ${isCorriente ? 'Cuenta Corriente' : 'Cuenta de Ahorro'}
+                      </span>
+                    </div>
+                    <div class="text-muted small mb-1">${maskCuenta(c.numero_cuenta)}</div>
+                    <h3 class="fw-bold mb-0">${formatSoles(c.saldo)}</h3>
+                    <div class="text-muted" style="font-size: 0.7rem;">Saldo Disponible · ${c.moneda || 'PEN'}</div>
+                  </div>
+                </div>
+              </div>`;
+          }).join('');
+
+      // Renderizar Movimientos
+      const containerT = document.getElementById('txnRecientes');
+      if (!txns || txns.length === 0) {
+        containerT.innerHTML = `<p class="text-muted text-center py-4">Sin movimientos recientes.</p>`;
+      } else {
+        containerT.innerHTML = `
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <tbody>
+                ${txns.map(t => {
+                  const esEgreso = t.tipo === 'egreso' || t.tipo === 'debito';
+                  return `
+                    <tr>
+                      <td class="ps-4">
+                        <div class="d-flex align-items-center gap-3">
+                          <div class="bg-light rounded-circle p-2">
+                            <i class="bi ${esEgreso ? 'bi-arrow-up-right text-danger' : 'bi-arrow-down-left text-success'}"></i>
+                          </div>
+                          <div>
+                            <div class="fw-bold small">${t.descripcion}</div>
+                            <div class="text-muted" style="font-size: 0.7rem">${formatFecha(t.fecha)}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="text-end pe-4 fw-bold ${esEgreso ? 'text-danger' : 'text-success'}">
+                        ${esEgreso ? '-' : '+'} ${formatSoles(t.monto)}
+                      </td>
+                    </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>`;
+      }
+
+      loadingOverlay.classList.add('d-none');
+
+    } catch (e) {
+      console.error(e);
+      loadingOverlay.innerHTML = `<div class="alert alert-danger">Error al cargar datos. Refresca la página.</div>`;
+    }
+  }
+
+  function maskCuenta(num) {
+    if (!num) return '•••• 0000';
+    const limpio = num.replace(/-/g, '');
+    return `•••• •••• ${limpio.slice(-4)}`;
+  }
+
+  document.getElementById('btnLogout').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.replace('../index.html');
+  });
+</script>
+
+<style>
+  .transition-hover:hover { transform: translateY(-5px); transition: 0.3s; box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; }
+  .nav-link:hover { background: rgba(0,0,0,.05); border-radius: 5px; }
+  .sidebar .nav-link.active { background: #e7f1ff; }
+</style>
+</body>
+</html>

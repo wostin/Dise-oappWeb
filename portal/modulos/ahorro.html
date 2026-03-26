@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ahorro — Mi Banco</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="../css/styles.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand fw-bold" href="dashboard.html"><i class="bi bi-bank me-2"></i>MI BANCO</a>
+    <div class="ms-auto d-flex align-items-center gap-3">
+      <span class="text-white d-none d-sm-inline small">
+        <i class="bi bi-person-circle me-1"></i><span id="userName">Cliente</span>
+      </span>
+      <button class="btn btn-sm btn-light fw-bold" id="btnLogout">Salir</button>
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid">
+  <div class="row">
+    <nav class="col-md-3 col-lg-2 d-md-block bg-white sidebar collapse border-end min-vh-100 py-4">
+      <ul class="nav flex-column gap-2">
+        <li class="nav-item"><a class="nav-link text-dark" href="dashboard.html"><i class="bi bi-grid-1x2 me-2"></i> Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link text-dark" href="transacciones.html"><i class="bi bi-arrow-left-right me-2"></i> Transacciones</a></li>
+        <li class="nav-item"><a class="nav-link text-dark" href="pagos.html"><i class="bi bi-credit-card me-2"></i> Pagos</a></li>
+        <li class="nav-item"><a class="nav-link text-dark" href="prestamos.html"><i class="bi bi-cash-stack me-2"></i> Préstamos</a></li>
+        <li class="nav-item"><a class="nav-link active fw-bold text-success" href="ahorro.html"><i class="bi bi-piggy-bank me-2"></i> Ahorro</a></li>
+      </ul>
+    </nav>
+
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h4 class="fw-bold text-success mb-1"><i class="bi bi-piggy-bank me-2"></i>Mi Ahorro</h4>
+          <p class="text-muted small">Visualiza tus metas y el crecimiento de tu dinero.</p>
+        </div>
+      </div>
+
+      <div id="loadingAhorro" class="text-center py-5">
+        <div class="spinner-border text-success"></div>
+        <p class="text-muted mt-2">Cargando tus ahorros...</p>
+      </div>
+
+      <div id="contenidoAhorro" class="d-none">
+        <div class="row g-4 mb-4">
+          <div class="col-lg-6">
+            <div class="card border-0 shadow-sm bg-success text-white p-4 h-100" style="border-radius: 15px;">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <span class="small opacity-75">Saldo disponible para ahorrar</span>
+                  <h1 class="fw-bold mt-1" id="saldoAhorro">S/ 0.00</h1>
+                  <p class="small mb-0 mt-3" id="numCuentaAhorro">Cuenta: •••• ----</p>
+                </div>
+                <i class="bi bi-piggy-bank fs-1 opacity-50"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6">
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <div class="card border-0 shadow-sm p-3 text-center">
+                  <span class="text-muted small d-block">Tasa de Rendimiento</span>
+                  <span class="h4 fw-bold text-success mb-0" id="tasaAhorro">0%</span>
+                  <span class="text-muted" style="font-size: 0.6rem;">TEA Anual</span>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="card border-0 shadow-sm p-3 text-center">
+                  <span class="text-muted small d-block">Mi Meta</span>
+                  <span class="h4 fw-bold text-primary mb-0" id="metaAhorro">S/ 0.00</span>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="card border-0 shadow-sm p-3">
+                  <div class="d-flex justify-content-between mb-2 small">
+                    <span class="fw-bold">Progreso de mi Meta</span>
+                    <span id="pctProgreso" class="text-success fw-bold">0%</span>
+                  </div>
+                  <div class="progress" style="height: 12px; border-radius: 10px;">
+                    <div id="barraProgreso" class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar"></div>
+                  </div>
+                  <div class="mt-2 text-muted" style="font-size: 0.7rem;" id="faltaProgreso"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card border-0 shadow-sm overflow-hidden">
+          <div class="card-header bg-white border-0 p-0">
+            <ul class="nav nav-tabs nav-fill" id="tabsAhorro">
+              <li class="nav-item">
+                <button class="nav-link active fw-bold py-3" data-bs-toggle="tab" data-bs-target="#tabMovimientos">MOVIMIENTOS</button>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link fw-bold py-3" data-bs-toggle="tab" data-bs-target="#tabProyeccion">PROYECCIÓN ESTIMADA</button>
+              </li>
+            </ul>
+          </div>
+          <div class="tab-content">
+            <div class="tab-pane fade show active" id="tabMovimientos">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <tbody id="movAhorro"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="tab-pane fade p-4" id="tabProyeccion">
+              <div class="alert alert-info border-0 small">
+                <i class="bi bi-graph-up-arrow me-2"></i> Simulación de crecimiento a 12 meses basada en tu saldo actual.
+              </div>
+              <table class="table table-sm text-center">
+                <thead class="bg-light">
+                  <tr><th>Mes</th><th>Interés Estimado</th><th>Saldo Proyectado</th></tr>
+                </thead>
+                <tbody id="tablaProyeccion"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module">
+  import { supabase, requireAuth, formatSoles, formatFecha } from '../js/supabase.js';
+
+  async function inicializarAhorro() {
+    const user = await requireAuth();
+    if (!user) return;
+
+    document.getElementById('userName').textContent = user.user_metadata?.full_name?.split(' ')[0] || user.email;
+
+    try {
+      // 1. Obtener Meta (Tabla cuentas_ahorro)
+      const { data: ahorro } = await supabase.from('cuentas_ahorro').select('*').eq('user_id', user.id).maybeSingle();
+      
+      // 2. Obtener Saldo de Cuenta tipo ahorro (Tabla cuentas)
+      const { data: cuenta } = await supabase.from('cuentas').select('*').eq('user_id', user.id).eq('tipo', 'ahorro').maybeSingle();
+
+      if (!ahorro || !cuenta) {
+        document.getElementById('loadingAhorro').innerHTML = `
+          <div class="alert alert-warning m-4 shadow-sm">
+            <i class="bi bi-info-circle me-2"></i> No se encontró una cuenta de ahorro configurada para este usuario.
+          </div>`;
+        return;
+      }
+
+      // Mostrar contenido
+      document.getElementById('loadingAhorro').classList.add('d-none');
+      document.getElementById('contenidoAhorro').classList.remove('d-none');
+
+      const saldo = parseFloat(cuenta.saldo);
+      const meta = parseFloat(ahorro.meta_ahorro);
+      const tasa = parseFloat(ahorro.tasa_interes);
+
+      // UI General
+      document.getElementById('saldoAhorro').textContent = formatSoles(saldo);
+      document.getElementById('tasaAhorro').textContent = tasa + '%';
+      document.getElementById('metaAhorro').textContent = formatSoles(meta);
+      document.getElementById('numCuentaAhorro').textContent = `Cuenta: •••• ${cuenta.numero_cuenta.slice(-4)}`;
+
+      // Barra de Progreso
+      const pct = Math.min(Math.round((saldo / meta) * 100), 100);
+      document.getElementById('pctProgreso').textContent = pct + '%';
+      document.getElementById('barraProgreso').style.width = pct + '%';
+      document.getElementById('faltaProgreso').textContent = (saldo < meta) 
+        ? `Te faltan ${formatSoles(meta - saldo)} para alcanzar tu meta.`
+        : '¡Felicidades! Has superado tu meta de ahorro.';
+
+      // Proyección Financiera
+      const tasaMensual = Math.pow(1 + (tasa/100), 1/12) - 1;
+      let projectionHTML = '';
+      let saldoTemp = saldo;
+      for(let i=1; i<=12; i++) {
+        let interesMes = saldoTemp * tasaMensual;
+        saldoTemp += interesMes;
+        projectionHTML += `<tr><td>Mes ${i}</td><td class="text-success">+ ${formatSoles(interesMes)}</td><td class="fw-bold">${formatSoles(saldoTemp)}</td></tr>`;
+      }
+      document.getElementById('tablaProyeccion').innerHTML = projectionHTML;
+
+      // Movimientos
+      const { data: movs } = await supabase.from('transacciones')
+        .select('*').eq('cuenta_id', cuenta.id).order('fecha', {ascending: false}).limit(8);
+
+      const movContainer = document.getElementById('movAhorro');
+      if (!movs || movs.length === 0) {
+        movContainer.innerHTML = '<tr><td class="text-center p-4 text-muted small">No hay transacciones registradas.</td></tr>';
+      } else {
+        movContainer.innerHTML = movs.map(m => {
+          const esIngreso = m.tipo === 'ingreso' || m.tipo === 'credito';
+          return `
+            <tr>
+              <td class="ps-4"><i class="bi bi-${esIngreso ? 'arrow-down-left-circle-fill text-success' : 'arrow-up-right-circle-fill text-danger'} fs-5"></i></td>
+              <td><span class="fw-bold d-block small">${m.descripcion}</span><span class="text-muted" style="font-size:0.6rem">${formatFecha(m.fecha)}</span></td>
+              <td class="text-end pe-4 fw-bold ${esIngreso ? 'text-success' : 'text-danger'}">
+                ${esIngreso ? '+' : '-'} ${formatSoles(m.monto)}
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+    } catch (e) {
+      console.error("Error cargando ahorros:", e);
+      document.getElementById('loadingAhorro').innerHTML = `<div class="alert alert-danger m-4">Error técnico al cargar datos.</div>`;
+    }
+  }
+
+  document.getElementById('btnLogout').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.assign('../index.html');
+  });
+
+  inicializarAhorro();
+</script>
+</body>
+</html>
